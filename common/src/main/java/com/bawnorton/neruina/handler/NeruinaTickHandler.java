@@ -4,7 +4,6 @@ import com.bawnorton.neruina.Neruina;
 import com.bawnorton.neruina.config.Config;
 import com.bawnorton.neruina.exception.DoNotHandleException;
 import com.bawnorton.neruina.mixin.invoker.WorldChunkInvoker;
-import com.bawnorton.neruina.thread.ConditionalRunnable;
 import com.bawnorton.neruina.version.Version;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import net.minecraft.block.BlockState;
@@ -19,7 +18,6 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.PlayerManager;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
@@ -39,7 +37,7 @@ public abstract class NeruinaTickHandler {
     private static final Set<ItemStack> ERRORED_ITEM_STACKS = new HashSet<>();
     private static final Set<ImmutablePair<BlockPos, BlockState>> ERRORED_BLOCK_STATES = new HashSet<>();
 
-    private static MinecraftServer server;
+    public static MinecraftServer server;
 
     public static void setServer(MinecraftServer server) {
         NeruinaTickHandler.server = server;
@@ -200,9 +198,7 @@ public abstract class NeruinaTickHandler {
     }
 
     private static void messagePlayers(Text message) {
-        if (!Config.getInstance().broadcastErrors) return;
-        PlayerManager playerManager = server.getPlayerManager();
-        ConditionalRunnable.create(() -> playerManager.getPlayerList().forEach(player -> player.sendMessage(Version.formatText(message), false)), () -> playerManager.getCurrentPlayerCount() >= 1);
+        PermissionHandler.informAdmins(message);
     }
 
     public static boolean isErrored(BlockEntity blockEntity) {
